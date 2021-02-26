@@ -123,9 +123,9 @@ func GetInstances() MySQLInstanceList {
 			}
 			//log_bin
 			if v, ok := argsMap["log-bin"]; ok {
-				tmpInstance.BinlogDir = filepath.Base(v)
+				tmpInstance.BinlogDir = v
 			} else if v, ok := argsMap["log_bin"]; ok {
-				tmpInstance.BinlogDir = filepath.Base(v)
+				tmpInstance.BinlogDir = v
 			} else {
 				tmpInstance.BinlogDir = filepath.Base(ReadCfgFromFile(tmpInstance.MycnfFile, "log_bin"))
 			}
