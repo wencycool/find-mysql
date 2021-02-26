@@ -181,6 +181,23 @@ func GetInstances() MySQLInstanceList {
 					}
 				}
 			}
+			//进一步判断tmpInstance.Port是否为0，如果还是为0则查找my.cnf文件
+			if tmpInstance.Port == 0 {
+				tmpPort := ReadCfgFromFile(tmpInstance.MycnfFile, "port")
+				if tmpPort != "" {
+					if _port, err := strconv.Atoi(tmpPort); err == nil {
+						tmpInstance.Port = _port
+					}
+				} else {
+					tmpInstance.Port = 3306 //最后赋予默认值
+				}
+			}
+			if tmpInstance.SocketFile == "" {
+				_socket := ReadCfgFromFile(tmpInstance.MycnfFile, "socket")
+				if _socket != "" {
+					tmpInstance.SocketFile = _socket
+				}
+			}
 			mysqlInstanceList = append(mysqlInstanceList, *tmpInstance)
 		}
 	}
