@@ -97,7 +97,7 @@ func GetInstances() MySQLInstanceList {
 				searchPathList := []string{
 					"/etc/my.cnf",
 					"/etc/mysql/my.cnf",
-					"user/local/mysql/etc/my.cnf",
+					"/usr/local/mysql/etc/my.cnf",
 				}
 				if userStruct, err := user.Lookup(tmpInstance.User); err == nil {
 					searchPathList = append(searchPathList, filepath.Join(userStruct.HomeDir, ".my.cnf"))
