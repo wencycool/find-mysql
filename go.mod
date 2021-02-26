@@ -1,4 +1,4 @@
-module github.com/wencycool/findmysql
+module github.com/wencycool/find_mysql
 
 go 1.16
 
