@@ -68,7 +68,7 @@ func GetInstances() MySQLInstanceList {
 				}
 			}
 			tmpInstance.Pid = int(p.Pid)
-			tmpInstance.Pname, _ = p.Name()
+			tmpInstance.Name, _ = p.Name()
 			tmpInstance.User, _ = p.Username()
 			tmpInstance.CmdLine, _ = p.Cmdline()
 
