@@ -123,11 +123,11 @@ func GetInstances() MySQLInstanceList {
 			}
 			//log_bin
 			if v, ok := argsMap["log-bin"]; ok {
-				tmpInstance.BinlogDir = v
+				tmpInstance.BinlogDir = filepath.Dir(v)
 			} else if v, ok := argsMap["log_bin"]; ok {
-				tmpInstance.BinlogDir = v
+				tmpInstance.BinlogDir = filepath.Dir(v)
 			} else {
-				tmpInstance.BinlogDir = filepath.Base(ReadCfgFromFile(tmpInstance.MycnfFile, "log_bin"))
+				tmpInstance.BinlogDir = filepath.Dir(ReadCfgFromFile(tmpInstance.MycnfFile, "log_bin"))
 			}
 			//error-log
 			if v, ok := argsMap["log-error"]; ok {
@@ -172,7 +172,6 @@ func GetInstances() MySQLInstanceList {
 							}
 						} else if netstat.Status == "NONE" && strings.HasSuffix(netstat.Laddr.IP, "sock") {
 							tmpSocketFile := netstat.Laddr.IP
-							filepath.Base(tmpSocketFile)
 							if tmpInstance.SocketFile == "" {
 								tmpInstance.SocketFile = tmpSocketFile
 							} else if len(filepath.Base(tmpInstance.SocketFile)) > len(filepath.Base(tmpSocketFile)) {
