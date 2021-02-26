@@ -54,7 +54,7 @@ func GetInstances() MySQLInstanceList {
 			tmpInstance := new(MySQLInstance)
 			if pParentId, err := p.Ppid(); err != nil {
 				tmpInstance.Err = append(tmpInstance.Err, err)
-			}else {
+			} else {
 				if ok, err := process.PidExists(pParentId); err == nil && ok {
 					//存在父进程
 					if parentProc, err := process.NewProcess(pParentId); err == nil {
@@ -63,12 +63,12 @@ func GetInstances() MySQLInstanceList {
 						tmpInstance.Puser, _ = parentProc.Username()
 						tmpInstance.PcmdLine, _ = parentProc.Cmdline()
 					}
-				}else if err != nil{
+				} else if err != nil {
 					tmpInstance.Err = append(tmpInstance.Err, err)
 				}
 			}
 			tmpInstance.Pid = int(p.Pid)
-			tmpInstance.Pname, _ = p.Name()
+			tmpInstance.Name, _ = p.Name()
 			tmpInstance.User, _ = p.Username()
 			tmpInstance.CmdLine, _ = p.Cmdline()
 
@@ -146,21 +146,21 @@ func GetInstances() MySQLInstanceList {
 				tmpInstance.SlowLogFile = ReadCfgFromFile(tmpInstance.MycnfFile, "slow_query_log_file")
 			}
 			//补充确认slowlog是否存在
-			if _,err := os.Lstat(tmpInstance.SlowLogFile);err != nil{
-				hostname,_ := os.Hostname()
-				slowlog := filepath.Join(tmpInstance.DataDir,hostname+"-slow.log")
-				if _,err := os.Lstat(slowlog);err == nil{
+			if _, err := os.Lstat(tmpInstance.SlowLogFile); err != nil {
+				hostname, _ := os.Hostname()
+				slowlog := filepath.Join(tmpInstance.DataDir, hostname+"-slow.log")
+				if _, err := os.Lstat(slowlog); err == nil {
 					tmpInstance.SlowLogFile = slowlog
 				}
 			}
 			//查找port和socket file
-			if v,ok := argsMap["port"];ok{
-				tmpInstance.Port,_ = strconv.Atoi(v)
+			if v, ok := argsMap["port"]; ok {
+				tmpInstance.Port, _ = strconv.Atoi(v)
 			}
-			if v,ok := argsMap["socket"];ok{
-				tmpInstance.SocketFile  = v
+			if v, ok := argsMap["socket"]; ok {
+				tmpInstance.SocketFile = v
 			}
-			if tmpInstance.Port == 0 || tmpInstance.SocketFile == ""{
+			if tmpInstance.Port == 0 || tmpInstance.SocketFile == "" {
 				//从进程的网络监听端口层面来确认端口号，需要root权限
 				if netstats, err := p.Connections(); err == nil {
 					for _, netstat := range netstats {
@@ -191,11 +191,11 @@ func GetInstances() MySQLInstanceList {
 //解析my.cnf文件
 func ReadCfgFromFile(filename string, key string) string {
 	cfg, err := ini.LoadSources(ini.LoadOptions{
-		Loose: true,
+		Loose:                   true,
 		SkipUnrecognizableLines: true,
-		AllowBooleanKeys: true,
-		ReaderBufferSize: 0,
-	},filename)
+		AllowBooleanKeys:        true,
+		ReaderBufferSize:        0,
+	}, filename)
 
 	if err != nil {
 		fmt.Fprint(os.Stderr, err.Error())
