@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -35,6 +36,7 @@ type MySQLInstance struct {
 	ErrorLogFile string  `json:"errorlog"`
 	SlowLogFile  string  `json:"slowlog"`
 	Verson       string  `json:"version"`
+	VersonInfo   string  `json:"version_info"`
 	Err          []error `json:"-"`
 }
 
@@ -208,8 +210,13 @@ func GetInstances() MySQLInstanceList {
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 			defer cancel()
 			cmd := exec.CommandContext(ctx, strings.TrimSuffix(tmpInstance.FullName, "d"), "--version", "--verbose")
-			if output, err := cmd.CombinedOutput(); err != nil {
-				tmpInstance.Verson = string(output)
+			if output, err := cmd.CombinedOutput(); err == nil {
+				tmpInstance.VersonInfo = string(output)
+				re := regexp.MustCompile(`\s+(\d+\.\d+\.\d+)\s+`)
+				subMatchs := re.FindStringSubmatch(tmpInstance.VersonInfo)
+				for _, m := range subMatchs {
+					tmpInstance.Verson = m
+				}
 			}
 			mysqlInstanceList = append(mysqlInstanceList, *tmpInstance)
 		}
