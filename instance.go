@@ -3,19 +3,23 @@ package find_mysql
 //用来查找当前操作系统上有多少正在运行到实例
 
 import (
+	"context"
 	"fmt"
 	"github.com/go-ini/ini"
 	"github.com/shirou/gopsutil/process"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type MySQLInstance struct {
 	Pid          int     `json:"pid"`
 	Name         string  `json:"name"`
+	FullName     string  `json:"full_name"`
 	User         string  `json:"user"`
 	CmdLine      string  `json:"cmdline"`
 	Ppid         int     `json:"parent_pid"`
@@ -30,6 +34,7 @@ type MySQLInstance struct {
 	BinlogDir    string  `json:"binlogdir"`
 	ErrorLogFile string  `json:"errorlog"`
 	SlowLogFile  string  `json:"slowlog"`
+	Verson       string  `json:"version"`
 	Err          []error `json:"-"`
 }
 
@@ -69,6 +74,7 @@ func GetInstances() MySQLInstanceList {
 			}
 			tmpInstance.Pid = int(p.Pid)
 			tmpInstance.Name, _ = p.Name()
+			tmpInstance.FullName = cmdSlice[0]
 			tmpInstance.User, _ = p.Username()
 			tmpInstance.CmdLine, _ = p.Cmdline()
 
@@ -197,6 +203,13 @@ func GetInstances() MySQLInstanceList {
 				if _socket != "" {
 					tmpInstance.SocketFile = _socket
 				}
+			}
+			//获取版本信息
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, strings.TrimSuffix(tmpInstance.FullName, "d"), "--version", "--verbose")
+			if output, err := cmd.CombinedOutput(); err != nil {
+				tmpInstance.Verson = string(output)
 			}
 			mysqlInstanceList = append(mysqlInstanceList, *tmpInstance)
 		}
