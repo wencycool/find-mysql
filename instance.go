@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/go-ini/ini"
 	"github.com/shirou/gopsutil/process"
+	"net"
 	"os"
 	"os/exec"
 	"os/user"
@@ -18,6 +19,8 @@ import (
 )
 
 type MySQLInstance struct {
+	HostName     string  `json:"hostname"`
+	IPList       string  `json:"iplist"`
 	Pid          int     `json:"pid"`
 	Name         string  `json:"name"`
 	FullName     string  `json:"full_name"`
@@ -42,7 +45,29 @@ type MySQLInstance struct {
 
 type MySQLInstanceList []MySQLInstance
 
+func getIPList() []string {
+	ipSlice := make([]string, 0)
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	for _, addr := range addrs {
+		if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil || ipnet.IP.To16() != nil {
+				ipSlice = append(ipSlice, ipnet.IP.String())
+			}
+		}
+	}
+	return ipSlice
+}
 func GetInstances() MySQLInstanceList {
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = ""
+	}
+	iplistStr := strings.Join(getIPList(), ",")
 	mysqlInstanceList := MySQLInstanceList{}
 	ps, err := process.Processes()
 	if err != nil {
@@ -59,6 +84,8 @@ func GetInstances() MySQLInstanceList {
 		if strings.HasSuffix(cmdSlice[0], "mysqld") {
 			//说明当前进程是MySQLd进程
 			tmpInstance := new(MySQLInstance)
+			tmpInstance.HostName = hostname
+			tmpInstance.IPList = iplistStr
 			if pParentId, err := p.Ppid(); err != nil {
 				tmpInstance.Err = append(tmpInstance.Err, err)
 			} else {
@@ -79,7 +106,6 @@ func GetInstances() MySQLInstanceList {
 			tmpInstance.FullName = cmdSlice[0]
 			tmpInstance.User, _ = p.Username()
 			tmpInstance.CmdLine, _ = p.Cmdline()
-
 			//解析命令行参数找到my.cnf文件
 			//开始解析cmdArgs
 			argsMap := make(map[string]string, 0)
