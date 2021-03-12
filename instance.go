@@ -187,6 +187,10 @@ func GetInstances() MySQLInstanceList {
 					tmpInstance.SlowLogFile = slowlog
 				}
 			}
+			//补充确认errorlog是否存在
+			if _, err := os.Lstat(tmpInstance.ErrorLogFile); err != nil || !strings.HasPrefix(tmpInstance.ErrorLogFile, "/") {
+				tmpInstance.ErrorLogFile = filepath.Join(tmpInstance.DataDir, tmpInstance.ErrorLogFile)
+			}
 			//查找port和socket file
 			if v, ok := argsMap["port"]; ok {
 				tmpInstance.Port, _ = strconv.Atoi(v)
