@@ -1,4 +1,4 @@
-package find
+package findmysql
 
 //用来查找当前操作系统上有多少正在运行到实例
 
