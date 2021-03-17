@@ -1,4 +1,4 @@
-# find_mysql
+# find
 #package: findmysql
 用户查找当前os上存在哪些mysql的进程，以及基本信息
 只支持：linux系统
